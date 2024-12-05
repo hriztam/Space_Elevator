@@ -1,0 +1,47 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  background: linear-gradient(
+    to top,
+    #0b3d91,
+    #102a72,
+    #1b1f53,
+    #2b1540,
+    #3b0d2e
+  );
+}
+
+#elevator {
+  height: 100vh;
+  width: 100%;
+  scroll-snap-type: y mandatory; /* Snap scrolling */
+  overflow-y: scroll; /* Allow vertical scrolling */
+}
+
+.level {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  text-align: center;
+  scroll-snap-align: start; /* Snap to start of each section */
+}
+
+/* #level-1 {
+  background: linear-gradient(to top, #228b22, #32cd32, #87ceeb);
+}
+
+#level-2 {
+  background: linear-gradient(to top, #87ceeb, #4682b4, #1e90ff, #4169e1);
+}
+
+#level-3 {
+  background: linear-gradient(to top, #87ceeb, #4682b4, #2f4f4f, #000000);
+}
+
+#level-4 {
+  background: linear-gradient(to top, #000000, #191970, #4b0082, #8a2be2);
+} */

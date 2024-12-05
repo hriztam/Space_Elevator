@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sky Elevation Journey</title>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 5000px;
+        overflow-x: hidden;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(
+          to bottom,
+          rgb(0, 0, 20) 0%,
+          rgb(0, 0, 50) 10%,
+          rgb(0, 30, 80) 20%,
+          rgb(0, 60, 120) 30%,
+          rgb(30, 100, 160) 40%,
+          rgb(70, 140, 200) 50%,
+          rgb(100, 170, 220) 60%,
+          rgb(150, 200, 240) 70%,
+          rgb(200, 230, 255) 80%,
+          rgb(240, 250, 255) 90%,
+          rgb(255, 255, 255) 100%
+        );
+        background-attachment: fixed;
+      }
+      .star {
+        position: fixed;
+        background: white;
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 1s ease;
+      }
+      .space-star {
+        position: fixed;
+        background: white;
+        border-radius: 50%;
+        opacity: 0.7;
+      }
+      .cloud {
+        position: fixed;
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 200px;
+        filter: blur(3px);
+        transition: transform 2s ease;
+      }
+      .atmospheric-layer {
+        position: fixed;
+        width: 100%;
+        height: 50px;
+        opacity: 0.1;
+        z-index: 10;
+      }
+      #space-layer {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 1000px;
+        background: linear-gradient(
+          to bottom,
+          rgb(0, 0, 0) 0%,
+          rgba(0, 0, 0, 0.8) 100%
+        );
+        z-index: 5;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+      }
+      #spaceship {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 50px;
+        height: 100px;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 100"><path d="M25 0 L10 100 L40 100 Z" fill="silver"/><path d="M15 100 L25 80 L35 100" fill="gray"/></svg>')
+          no-repeat center;
+        background-size: contain;
+        z-index: 1000;
+      }
+      #altitude {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        color: white;
+        font-size: 18px;
+        text-shadow: 1px 1px 2px black;
+        z-index: 2000;
+      }
+      #wind-indicator {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        color: white;
+        font-size: 14px;
+        text-shadow: 1px 1px 2px black;
+        z-index: 2000;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="space-layer"></div>
+    <div id="spaceship"></div>
+    <div id="altitude">Altitude: 0m</div>
+    <div id="wind-indicator">Wind: Calm</div>
+
+    <script>
+      const spaceship = document.getElementById("spaceship");
+      const altitudeDisplay = document.getElementById("altitude");
+      const windIndicator = document.getElementById("wind-indicator");
+      const spaceLayer = document.getElementById("space-layer");
+      const bodyHeight = document.documentElement.scrollHeight;
+      const cloudElements = [];
+      const starElements = [];
+      const spaceStarElements = [];
+      const atmosphericLayers = [];
+
+      // Complex cloud shape generator (from previous version)
+      function createComplexCloudShape(width, height) {
+        const cloudShape = document.createElement("div");
+        cloudShape.style.position = "absolute";
+        cloudShape.style.width = `${width}px`;
+        cloudShape.style.height = `${height}px`;
+        cloudShape.style.background = "transparent";
+
+        const bubbleCount = Math.floor(Math.random() * 5) + 3;
+        for (let i = 0; i < bubbleCount; i++) {
+          const bubble = document.createElement("div");
+          bubble.style.position = "absolute";
+          bubble.style.background = "rgba(255,255,255,0.7)";
+          bubble.style.borderRadius = "50%";
+
+          const bubbleSize = width * (Math.random() * 0.5 + 0.3);
+          bubble.style.width = `${bubbleSize}px`;
+          bubble.style.height = `${bubbleSize}px`;
+
+          bubble.style.left = `${Math.random() * (width - bubbleSize)}px`;
+          bubble.style.top = `${Math.random() * (height - bubbleSize)}px`;
+          bubble.style.filter = "blur(3px)";
+
+          cloudShape.appendChild(bubble);
+        }
+
+        return cloudShape;
+      }
+
+      // Create atmospheric stars
+      function createStars() {
+        for (let i = 0; i < 200; i++) {
+          const star = document.createElement("div");
+          star.classList.add("star");
+
+          const size = Math.random() * 2;
+          const left = Math.random() * window.innerWidth;
+          const top = Math.random() * bodyHeight;
+
+          star.style.width = `${size}px`;
+          star.style.height = `${size}px`;
+          star.style.left = `${left}px`;
+          star.style.top = `${top}px`;
+
+          document.body.appendChild(star);
+          starElements.push(star);
+        }
+      }
+
+      // Create space stars
+      function createSpaceStars() {
+        for (let i = 0; i < 500; i++) {
+          const star = document.createElement("div");
+          star.classList.add("space-star");
+
+          const size = Math.random() * 2;
+          const left = Math.random() * window.innerWidth;
+          const top = Math.random() * 1000;
+
+          star.style.width = `${size}px`;
+          star.style.height = `${size}px`;
+          star.style.left = `${left}px`;
+          star.style.top = `${top}px`;
+
+          spaceLayer.appendChild(star);
+          spaceStarElements.push(star);
+        }
+      }
+
+      // Create atmospheric layers
+      function createAtmosphericLayers() {
+        const atmosphereLayers = [
+          { color: "rgba(100,149,237,0.1)", height: 500 },
+          { color: "rgba(135,206,235,0.1)", height: 1000 },
+          { color: "rgba(176,196,222,0.1)", height: 1500 },
+          { color: "rgba(200,200,220,0.1)", height: 2000 },
+        ];
+
+        atmosphereLayers.forEach((layer, index) => {
+          const atmosphereLayer = document.createElement("div");
+          atmosphereLayer.classList.add("atmospheric-layer");
+          atmosphereLayer.style.backgroundColor = layer.color;
+          atmosphereLayer.style.top = `${layer.height}px`;
+
+          document.body.appendChild(atmosphereLayer);
+          atmosphericLayers.push(atmosphereLayer);
+        });
+      }
+
+      // Twinkle stars
+      function twinkleStars() {
+        starElements.forEach((star) => {
+          if (Math.random() > 0.7) {
+            star.style.opacity = Math.random();
+          }
+        });
+      }
+
+      // Create clouds with complex shapes
+      function createClouds() {
+        for (let i = 0; i < 30; i++) {
+          const width = Math.random() * 250 + 150;
+          const height = width / 2;
+
+          const cloudShape = createComplexCloudShape(width, height);
+
+          const left = Math.random() * window.innerWidth;
+          const top = Math.random() * bodyHeight;
+
+          cloudShape.style.left = `${left}px`;
+          cloudShape.style.top = `${top}px`;
+
+          document.body.appendChild(cloudShape);
+          cloudElements.push({
+            element: cloudShape,
+            baseLeft: left,
+            baseTop: top,
+            windSpeed: Math.random() * 2 - 1,
+            verticalDrift: Math.random() * 0.3 - 0.15,
+          });
+        }
+      }
+
+      createStars();
+      createSpaceStars();
+      createClouds();
+      createAtmosphericLayers();
+
+      // Periodic star twinkling
+      setInterval(twinkleStars, 500);
+
+      window.addEventListener("scroll", () => {
+        const scrollPosition = window.pageYOffset;
+        const maxScroll =
+          document.documentElement.scrollHeight - window.innerHeight;
+        const invertedScrollPosition = maxScroll - scrollPosition;
+
+        // Move spaceship vertically
+        spaceship.style.top = `calc(50% - ${invertedScrollPosition * 0.1}px)`;
+
+        // Update altitude display
+        const altitude = Math.round(invertedScrollPosition);
+        altitudeDisplay.textContent = `Altitude: ${altitude}m`;
+
+        // Subtle spaceship rotation
+        spaceship.style.transform = `translate(-50%, -50%) rotate(${
+          invertedScrollPosition * 0.1
+        }deg)`;
+
+        // Wind-like cloud movement with interactive wind
+        let windDescription = "Calm";
+        cloudElements.forEach((cloud) => {
+          const windOffset =
+            Math.sin(scrollPosition * 0.001 + cloud.windSpeed) * 50;
+          const verticalOffset =
+            cloud.verticalDrift * Math.cos(scrollPosition * 0.001) * 30 -
+            scrollPosition * 0.05;
+
+          cloud.element.style.transform = `translate(${windOffset}px, ${verticalOffset}px)`;
+
+          // Detect wind intensity
+          if (Math.abs(windOffset) > 20) {
+            windDescription = "Moderate";
+          }
+          if (Math.abs(windOffset) > 40) {
+            windDescription = "Strong";
+          }
+        });
+
+        // Update wind indicator
+        windIndicator.textContent = `Wind: ${windDescription}`;
+
+        // Atmospheric layer movement
+        atmosphericLayers.forEach((layer, index) => {
+          layer.style.opacity = Math.max(
+            0,
+            0.1 - (scrollPosition / (bodyHeight / 4)) * (index + 1) * 0.03
+          );
+        });
+
+        // Space layer and star interactions
+        if (scrollPosition > bodyHeight * 0.8) {
+          spaceLayer.style.opacity = Math.min(
+            1,
+            (scrollPosition - bodyHeight * 0.8) / (bodyHeight * 0.2)
+          );
+        } else {
+          spaceLayer.style.opacity = 0;
+        }
+
+        // Subtle star movement
+        starElements.forEach((star) => {
+          const currentTop = parseFloat(star.style.top);
+          star.style.top = `${currentTop - scrollPosition * 0.02}px`;
+        });
+
+        // Space stars parallax
+        spaceStarElements.forEach((star) => {
+          const currentTop = parseFloat(star.style.top);
+          star.style.top = `${currentTop - scrollPosition * 0.05}px`;
+
+          // Randomize star brightness
+          if (Math.random() > 0.95) {
+            star.style.opacity = Math.random() * 0.7;
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
